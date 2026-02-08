@@ -261,14 +261,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const registerMaster = async (data: any) => {
         try {
-            // 1. SignUp
+            // 1. SignUp with Metadata (Trigger handles Profile & Academy creation)
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: data.email,
                 password: data.password,
                 options: {
                     data: {
                         full_name: data.name,
-                        role: 'master'
+                        role: 'master',
+                        academy_name: data.academyName
                     }
                 }
             });
@@ -276,29 +277,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (authError) throw authError;
             if (!authData.user) throw new Error("No se pudo crear el usuario.");
 
-            const userId = authData.user.id;
-            const academyId = crypto.randomUUID();
-            const academyCode = 'ACAD-' + Math.floor(1000 + Math.random() * 9000);
-
-            // 2. Insert Profile
-            await supabase.from('profiles').insert({
-                id: userId,
-                email: data.email,
-                role: 'master',
-                full_name: data.name,
-                academy_id: academyId
-            });
-
-            // 3. Create Academy
-            await supabase.from('academies').insert({
-                id: academyId,
-                name: data.academyName,
-                code: academyCode,
-                owner_id: userId,
-            });
-
-            addToast('Academia registrada exitosamente', 'success');
-            fetchProfile(userId);
+            addToast('Registro iniciado. Por favor verifica tu correo.', 'success');
+            // Do NOT fetch profile immediately as session might be null if email confirm is required
+            // if (authData.session) fetchProfile(authData.user.id); 
             return true;
         } catch (error) {
             addToast(error instanceof Error ? error.message : "Error al registrar", 'error');
