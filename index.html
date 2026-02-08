@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IKC Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: "#DC2626", // Red 600
+                hover: "#B91C1C",   // Red 700
+                light: "#FEF2F2",   // Red 50
+              },
+              background: {
+                light: "#F9FAFB", // Gray 50
+                surface: "#FFFFFF",
+                input: "#F9FAFB", 
+                dark: "#111827",
+              },
+              text: {
+                main: "#111827", // Gray 900
+                secondary: "#6B7280", // Gray 500
+              },
+              success: "#16A34A",
+              warning: "#EA580C",
+              danger: "#DC2626",
+            },
+            fontFamily: {
+              sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
+            },
+            boxShadow: {
+              sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+              DEFAULT: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+              md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+              xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              'soft': "0 4px 20px -4px rgba(0, 0, 0, 0.05)", // Structured Minimalism Shadow
+              'glow': "0 0 15px rgba(220, 38, 38, 0.15)", // Red Glow
+            },
+            borderRadius: {
+                none: "0",
+                sm: "0.125rem",
+                DEFAULT: "0.25rem",
+                md: "0.375rem",      
+                lg: "0.5rem",        
+                xl: "0.75rem",       
+                '2xl': "1rem",
+                '3xl': "1.5rem",
+                full: "9999px",
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      :root {
+        --bg-canvas: #FFFFFF;
+        --bg-sidebar: #F9FAFB;
+        --text-main: #111827;
+        --text-secondary: #6B7280;
+        --primary-brand: #DC2626;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-canvas);
+        color: var(--text-main);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Icons */
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .material-symbols-outlined.filled {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      
+      /* Inputs - Structured Minimalism */
+      input[type="text"], 
+      input[type="email"], 
+      input[type="password"], 
+      input[type="number"], 
+      input[type="date"], 
+      input[type="tel"], 
+      input[type="time"],
+      select, 
+      textarea {
+          background-color: #F9FAFB !important; /* bg-gray-50 */
+          border: 1px solid transparent !important; 
+          color: #111827 !important; /* text-gray-900 */
+          border-radius: 0.5rem !important; /* rounded-lg */
+          padding-top: 0.6rem !important;     
+          padding-bottom: 0.6rem !important;  
+          font-size: 0.875rem !important;     
+          transition: all 0.2s ease-in-out;
+      }
+      
+      input::placeholder, textarea::placeholder {
+          color: #9CA3AF !important; 
+      }
+
+      /* Focus State: Soft & Elegant - EXCLUDING Checkbox/Radio */
+      input:not([type="checkbox"]):not([type="radio"]):focus, 
+      select:focus, 
+      textarea:focus {
+          background-color: #FFFFFF !important;
+          border-color: #FEE2E2 !important; /* border-red-100 */
+          box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.05) !important; /* ring-4 ring-red-500/5 */
+          outline: none !important;
+      }
+
+      /* Buttons & Interactive Elements */
+      button:active {
+          transform: translateY(1px);
+      }
+
+      /* Scrollbar - Minimal */
+      ::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+          background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+          background: #E5E7EB;
+          border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+          background: #D1D5DB;
+      }
+
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      ::selection {
+        background-color: #FECACA; 
+        color: #7F1D1D; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "zod": "https://esm.sh/zod@^4.3.5",
+    "@hookform/resolvers/": "https://esm.sh/@hookform/resolvers@^5.2.2/",
+    "react-hook-form": "https://esm.sh/react-hook-form@^7.70.0",
+    "framer-motion": "https://esm.sh/framer-motion@11.18.2",
+    "date-fns/": "https://esm.sh/date-fns@^4.1.0/",
+    "react-big-calendar": "https://esm.sh/react-big-calendar@^1.19.4",
+    "date-fns": "https://esm.sh/date-fns@^4.1.0",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.8.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="antialiased h-full bg-white text-slate-900">
+    <div id="root" class="h-full"></div>
+    <script type="module" src="./index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
+    
