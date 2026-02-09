@@ -197,7 +197,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     data: {
                         full_name: data.name,
                         role: 'student',
-                        academy_id: mAcademy.id
+                        academy_id: mAcademy.id, // CRITICAL: Must be snake_case
+                        academy_code: data.academyCode // Optional for debug
                     }
                 }
             });
