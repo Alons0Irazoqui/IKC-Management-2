@@ -37,94 +37,94 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, onClose }) => {
 
   const links = role === 'master' ? masterLinks : studentLinks;
   const displayName = currentUser?.name || (role === 'master' ? 'Sensei' : 'Alumno');
-  
+
   const handleLogout = () => {
-      logout();
-      navigate('/');
+    logout();
+    navigate('/');
   };
 
   return (
     <>
-      <div 
+      {/* Overlay para móvil */}
+      <div
         className={`fixed inset-0 bg-gray-900/10 backdrop-blur-[2px] z-40 transition-opacity duration-300 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
 
-      <aside 
+      <aside
         className={`
           fixed md:static inset-y-0 left-0 z-50
           flex flex-col w-72 h-full
-          bg-[#F9FAFB] /* Structured Minimalism: Gray Surface */
+          bg-[#F9FAFB] border-r border-gray-100
           transform transition-transform duration-300 ease-out 
           ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'}
-          /* No border-r. The contrast between #F9FAFB and #FFFFFF (content) creates the structure. */
         `}
       >
         {/* LOGO SECTION */}
         <div className="px-8 pt-10 pb-8 flex items-center justify-between">
-            <div className="flex flex-col justify-center leading-none">
-                <span className="text-3xl font-black text-red-600 tracking-tight">IKC</span>
-                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.25em] mt-1">Management</span>
-            </div>
-            
-            <button 
-                onClick={onClose} 
-                className="md:hidden text-slate-400 hover:text-slate-600 p-1"
-            >
-                <span className="material-symbols-outlined">close</span>
-            </button>
+          <div className="flex flex-col justify-center leading-none">
+            <span className="text-3xl font-black text-red-600 tracking-tight">IKC</span>
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.25em] mt-1">Management</span>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="md:hidden text-slate-400 hover:text-slate-600 p-1"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
 
         {/* NAVIGATION */}
         <nav className="flex-1 overflow-y-auto px-4 py-2 space-y-1 no-scrollbar">
-            {links.map((link) => {
+          {links.map((link) => {
             const isActive = location.pathname.startsWith(link.path);
             return (
-                <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={onClose}
-                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 group ${
-                        isActive
-                            ? 'bg-white text-slate-900 shadow-sm shadow-gray-200/50' /* Active state pops out as white card */
-                            : 'text-slate-500 hover:bg-gray-100 hover:text-slate-900'
-                        }`}
-                >
-                    <span className={`material-symbols-outlined text-[22px] transition-colors ${isActive ? 'text-red-600 filled' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                        {link.icon}
-                    </span>
-                    <span>
-                        {link.name}
-                    </span>
-                </Link>
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={onClose}
+                className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 group ${isActive
+                  ? 'bg-white text-slate-900 shadow-sm shadow-gray-200/50'
+                  : 'text-slate-500 hover:bg-gray-100 hover:text-slate-900'
+                  }`}
+              >
+                <span className={`material-symbols-outlined text-[22px] transition-colors ${isActive ? 'text-red-600 filled' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                  {link.icon}
+                </span>
+                <span>
+                  {link.name}
+                </span>
+              </Link>
             );
-            })}
+          })}
         </nav>
 
         {/* FOOTER / USER PROFILE */}
         <div className="p-5 mt-auto">
-            <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-2xl bg-white border border-gray-100 shadow-sm cursor-pointer group hover:border-gray-200 transition-all">
-                <Avatar 
-                    src={currentUser?.avatarUrl} 
-                    name={displayName} 
-                    className="size-9 rounded-full text-xs font-bold ring-2 ring-gray-50" 
-                />
-                <div className="flex flex-col overflow-hidden">
-                    <span className="text-sm font-bold text-slate-900 truncate group-hover:text-red-600 transition-colors">
-                        {displayName}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
-                        {role === 'master' ? 'Administrador' : 'Alumno'}
-                    </span>
-                </div>
+          <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-2xl bg-white border border-gray-100 shadow-sm cursor-pointer group hover:border-gray-200 transition-all">
+            {/* Asegúrate de que Avatar componente exista o usa un img simple si no */}
+            <Avatar
+              src={currentUser?.avatarUrl}
+              name={displayName}
+              className="size-9 rounded-full text-xs font-bold ring-2 ring-gray-50"
+            />
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-bold text-slate-900 truncate group-hover:text-red-600 transition-colors">
+                {displayName}
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+                {role === 'master' ? 'Administrador' : 'Alumno'}
+              </span>
             </div>
+          </div>
 
-            <button 
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-red-600 transition-colors w-full rounded-lg hover:bg-red-50 group uppercase tracking-wider justify-center"
-            >
-                <span>Cerrar Sesión</span>
-            </button>
+          <button
+            onClick={handleLogout} // Asegúrate de que esta función se llame así en tu código
+            className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-red-600 transition-colors w-full rounded-lg hover:bg-red-50 group uppercase tracking-wider justify-center"
+          >
+            <span>Cerrar Sesión</span>
+          </button>
         </div>
       </aside>
     </>

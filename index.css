@@ -1,9 +1,12 @@
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
 
-/* Custom base styles if needed */
-body {
-    background-color: #f3f4f6; /* bg-gray-100 */
+    body {
+        @apply bg-slate-50 text-slate-900 antialiased;
+    }
 }

@@ -39,18 +39,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async (userId: string, retryCount = 0) => {
         try {
+            console.log(`[Auth] Fetching profile for ${userId} (Attempt ${retryCount + 1})`);
+
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) {
-                console.error('Error fetching profile:', error);
+            if (error || !data) {
+                console.warn('[Auth] Profile not found or error:', error);
+
+                // Retry Logic (Recurse)
+                if (retryCount < 3) {
+                    setTimeout(() => fetchProfile(userId, retryCount + 1), 500);
+                    return;
+                }
+
+                // Self-Healing Logic (After 3 attempts)
+                console.log('[Auth] Attempting Self-Healing for Profile...');
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user && user.user_metadata) {
+                    const meta = user.user_metadata;
+                    const academyId = meta.academy_id || 'acad-1'; // Fallback
+
+                    // Manual Insert as last resort
+                    const { error: insertError } = await supabase.from('profiles').insert({
+                        id: userId,
+                        email: user.email,
+                        role: meta.role || 'student', // Default safe
+                        full_name: meta.full_name || 'Usuario',
+                        academy_id: academyId
+                    });
+
+                    if (!insertError) {
+                        console.log('[Auth] Self-Healing Successful. Refetching...');
+                        return fetchProfile(userId, 0); // Restart fetch
+                    } else {
+                        console.error('[Auth] Self-Healing Failed:', insertError);
+                    }
+                }
                 return;
             }
+
+            console.log('[Auth] Profile loaded:', data.role);
 
             const profile: UserProfile = {
                 id: data.id,
@@ -61,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 academyId: data.academy_id || 'acad-1',
             };
 
+            // Fetch Student Details if applicable
             if (profile.role === 'student') {
                 const { data: studentData } = await supabase
                     .from('students')
@@ -73,8 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             setCurrentUser(profile);
+
+            // Persistence for Legacy Login Check
+            localStorage.setItem('pulse_current_session', JSON.stringify(profile));
+
         } catch (err) {
-            console.error(err);
+            console.error('[Auth] Critical Error in fetchProfile:', err);
         }
     };
 
@@ -102,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = async () => {
         await supabase.auth.signOut();
         setCurrentUser(null);
+        localStorage.removeItem('pulse_current_session');
         addToast('Sesión cerrada correctamente', 'info');
     };
 
@@ -165,19 +205,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (authError) throw authError;
             if (!authData.user) throw new Error("No se pudo crear el usuario.");
 
+            // Check if session exists (Email Confirmation might be required)
+            if (!authData.session) {
+                addToast('Cuenta creada. Verifica tu email para completar tu perfil estudiantil la primera vez que entres.', 'info');
+                return true;
+            }
+
             const userId = authData.user.id;
 
-            // 3. Create Profile
-            const { error: profileError } = await supabase.from('profiles').insert({
-                id: userId,
-                email: data.email,
-                role: 'student',
-                full_name: data.name,
-                avatar_url: data.avatarUrl || '',
-                academy_id: mAcademy.id
-            });
-
-            if (profileError) console.error("Profile creation error", profileError);
+            // 3. Create Profile (REMOVED - Handled by Database Trigger)
 
             // 4. Create Student Record
             const initialAmount = Number(mAcademy.payment_settings?.monthlyTuition) || 0;
