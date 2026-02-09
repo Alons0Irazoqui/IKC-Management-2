@@ -213,12 +213,52 @@ export const PulseService = {
 
     // --- STUDENTS ---
     getStudents: async (academyId: string): Promise<Student[]> => {
-        const { data, error } = await supabase.from('students').select('*').eq('academy_id', academyId);
-        if (error) {
-            console.error(error);
+        if (!academyId) return [];
+        // console.log("Fetching students for academy:", academyId);
+
+        try {
+            const { data, error } = await supabase
+                .from('students')
+                .select('*')
+                .eq('academy_id', academyId)
+                .eq('status', 'active'); // Filtering by active status as requested
+
+            if (error) {
+                console.error("Error fetching students:", error.message);
+                throw error;
+            }
+
+            // EXPLICIT MAPPING: DB (snake_case) -> UI (CamelCase)
+            return (data || []).map((s: any) => ({
+                id: s.id,
+                userId: s.user_id,
+                academyId: s.academy_id,
+                name: s.name,
+                email: s.email,
+                age: s.age,
+                birthDate: s.birth_date,
+                cellPhone: s.cell_phone,
+                rank: s.rank || 'White Belt',
+                rankId: s.rank_id,
+                rankColor: s.rank_color,
+                stripes: s.stripes,
+                status: s.status || 'active',
+                program: s.program,
+                attendance: s.attendance,
+                totalAttendance: s.total_attendance,
+                joinDate: s.created_at, // CRITICAL FIX: Mapping created_at to joinDate
+                balance: Number(s.balance),
+                guardian: s.guardian,
+                notes: s.notes || [],
+                promotionHistory: s.promotion_history || [],
+                avatarUrl: s.avatar_url,
+                classesId: [],
+                attendanceHistory: []
+            }));
+        } catch (err) {
+            console.error("Unexpected error fetching students:", err);
             return [];
         }
-        return data.map(mapStudentFromDB);
     },
 
     saveStudents: async (students: Student[]) => {
@@ -299,12 +339,44 @@ export const PulseService = {
 
     // --- PAYMENTS ---
     getPayments: async (academyId: string): Promise<TuitionRecord[]> => {
-        const { data, error } = await supabase.from('financial_records').select('*').eq('academy_id', academyId);
-        if (error) return [];
+        try {
+            const { data, error } = await supabase.from('financial_records').select('*').eq('academy_id', academyId);
+            if (error) {
+                console.error("Error fetching payments:", error.message);
+                return [];
+            }
+            return (data || []).map(mapPaymentFromDB);
+        } catch (err) {
+            console.error("Unexpected error fetching payments:", err);
+            return [];
+        }
+    },
 
-        // Need to join student names? Or fetch students map.
-        // For efficiency, we just map. Student name might be missing if relying on context to fill it.
-        return data.map(mapPaymentFromDB);
+    getFinancialSummary: async (academyId: string) => {
+        try {
+            const { data, error } = await supabase.from('financial_records').select('amount, status').eq('academy_id', academyId);
+
+            if (error) {
+                console.error("Error fetching financial summary:", error);
+                return { totalRevenue: 0, totalPending: 0 };
+            }
+
+            const safeData = data || [];
+
+            const totalRevenue = safeData
+                .filter(r => r.status === 'paid')
+                .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+            const totalPending = safeData
+                .filter(r => r.status === 'pending' || r.status === 'overdue')
+                .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+            return { totalRevenue, totalPending };
+
+        } catch (err) {
+            console.error("Unexpected error in financial summary:", err);
+            return { totalRevenue: 0, totalPending: 0 };
+        }
     },
 
     savePayments: async (payments: TuitionRecord[]) => {
