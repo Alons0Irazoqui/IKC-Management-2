@@ -215,75 +215,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             // 3. Create Profile (REMOVED - Handled by Database Trigger)
 
-            // 4. Create Student Record
-            const initialAmount = Number(mAcademy.payment_settings?.monthlyTuition) || 0;
-
-            const studentInsert = {
-                user_id: userId,
-                academy_id: mAcademy.id,
-                name: data.name,
-                email: data.email,
-                cell_phone: data.cellPhone,
-                age: data.age,
-                birth_date: data.birthDate,
-                rank: 'White Belt',
-                rank_id: mAcademy.ranks?.[0]?.id || 'rank-1',
-                rank_color: 'white',
-                stripes: 0,
-                status: initialAmount > 0 ? 'debtor' : 'active',
-                program: 'Adults',
-                attendance: 0,
-                total_attendance: 0,
-                join_date: new Date().toISOString(),
-                balance: initialAmount,
-                guardian: {
-                    fullName: data.guardianName,
-                    email: data.guardianEmail,
-                    relationship: data.guardianRelationship,
-                    phones: {
-                        main: data.guardianMainPhone,
-                        secondary: data.guardianSecondaryPhone
-                    },
-                    address: {
-                        street: data.street,
-                        exteriorNumber: data.exteriorNumber,
-                        colony: data.colony,
-                        zipCode: data.zipCode
-                    }
-                },
-                avatar_url: data.avatarUrl || ''
-            };
-
-            const { data: studentDB, error: studentError } = await supabase
-                .from('students')
-                .insert(studentInsert)
-                .select()
-                .single();
-
-            if (studentError) throw studentError;
-
-            // 5. Initial Charge Logic
-            if (initialAmount > 0 && studentDB) {
-                const today = new Date();
-                const monthName = today.toLocaleString('es-ES', { month: 'long' });
-                const concept = `Mensualidad ${monthName}`;
-                const lateFeeDay = mAcademy.payment_settings?.lateFeeDay || 10;
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(lateFeeDay).padStart(2, '0');
-                const dueDate = `${year}-${month}-${day}`;
-
-                await supabase.from('financial_records').insert({
-                    academy_id: mAcademy.id,
-                    student_id: studentDB.id,
-                    concept: concept,
-                    amount: initialAmount,
-                    penalty_amount: 0,
-                    due_date: dueDate,
-                    status: 'pending',
-                    method: 'System'
-                });
-            }
+            // 4. Create Student Record (REMOVED - Handled by Database Trigger)
+            // The trigger handle_new_user now creates the student record automatically
+            // based on the metadata provided in signUp.
 
             addToast('Cuenta de alumno creada exitosamente', 'success');
             // Fetch profile to update state if auto-login happens (Supabase auto-logs in usually)
